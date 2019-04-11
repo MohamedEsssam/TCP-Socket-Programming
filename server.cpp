@@ -4,19 +4,59 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <iostream>
+
 #define PORT 8080
+#define BUFFER_SIZE 1024
+using namespace std;
+char* split(char* line){
+    //Index Variable
+    int position = 0;
+    //Array of Strings Where Each Position Has A Part of The Command
+    char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
+    //A Pointer to Char To Hold Each Token
+    char *token;
+    //This Is Used To Eliminate New Line In The String
+    //Because It Causes Issues For strtok
+    char *newline = strchr(line,'\n');
+    if ( newline )
+        *newline = 0;
 
-char * readFile();
-char *  split();
+    //strtok Is Used To Break Command Into a Series of Tokens Using
+    //Delimeter " "->Space
+    token = strtok(line, " ");
+    while (token != NULL)
+    {
+        tokens[position] = token;
+        position++;
+        token = strtok(NULL, " ");
 
-int main(int argc, char const *argv[])
+    }
+    tokens[position] = NULL;
+    return tokens[1];
+}
+
+char* readFile(char* clientMessage){
+    char *fileName = split(clientMessage);
+    FILE *file = fopen(fileName,"r");
+    if (!file) {printf("file not found");}
+    char *fileContent = (char *) malloc(sizeof(char) * 1024);
+    char *lineContent = (char *) malloc(sizeof(char) * 1024);
+    while (!feof(file)) {
+        fgets(lineContent, sizeof(file),file);
+        strcat(fileContent,lineContent);
+        strcpy(lineContent,"\0");
+    }
+    return fileContent;
+}
+int main()
 {
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
+    char ok[1024] = "HTTP/1.0 200 OK\r\n";
     char buffer[1024] = {0};
-    char *hello = "Hello from server";
 
 
     // Creating socket file descriptor
@@ -57,32 +97,10 @@ int main(int argc, char const *argv[])
     }
     valread = read( new_socket , buffer, 1024);
     printf("%s\n",buffer );
-    char *lineContent = readFile();
-    send(new_socket , lineContent , strlen(lineContent) , 0 );
+    char *fileContent = readFile(buffer);
+    cout<<fileContent;
+    strcat(ok,fileContent);
+    send(new_socket , ok , strlen(ok) , 0 );
     printf("Hello message sent\n");
     return 0;
 }
-
-char* split(char* clientMessage){
-    char **fileName;
-    for(int i = 0; i < sizeof(clientMessage); i++) {
-        fileName[i] = strsep(&clientMessage, " ");
-        if(fileName[i] == NULL) break;
-    }
-    return fileName[1];
-}
-
-char* readFile(char* clientMessage){
-    char *fileName = split(clientMessage);
-    FILE *file = fopen(fileName,"r");
-    if (!file) {printf("file not found");}
-    char *fileContent = (char *) malloc(sizeof(char) * 1024);
-    char *lineContent = (char *) malloc(sizeof(char) * 1024);
-    while (!feof(file)) {
-        fgets(lineContent, sizeof(file),file);
-        strcat(fileContent,lineContent);
-        strcpy(lineContent,"\0");
-    }
-    return lineContent;
-}
-
