@@ -9,7 +9,10 @@
 #define PORT 8080
 #define BUFFER_SIZE 1024
 using namespace std;
-char* split(char* line){
+char ok[1024] = "HTTP/1.0 200 OK\r\n";
+char badRequest[1024] = "HTTP/1.0 400 Bad Request\r\n";
+
+char** split(char* line){
     //Index Variable
     int position = 0;
     //Array of Strings Where Each Position Has A Part of The Command
@@ -33,11 +36,10 @@ char* split(char* line){
 
     }
     tokens[position] = NULL;
-    return tokens[1];
+    return tokens;
 }
 
-char* readFile(char* clientMessage){
-    char *fileName = split(clientMessage);
+char* readFile(char* fileName){
     FILE *file = fopen(fileName,"r");
     if (!file) {printf("file not found");}
     char *fileContent = (char *) malloc(sizeof(char) * 1024);
@@ -47,15 +49,50 @@ char* readFile(char* clientMessage){
         strcat(fileContent,lineContent);
         strcpy(lineContent,"\0");
     }
+    fclose(file);
     return fileContent;
 }
+
+void postFile(char ** requestContent){
+    FILE *file = fopen(requestContent[1],"a+");
+    for (int i = 2; i< sizeof(requestContent); i++){
+        fprintf(file, "%s", requestContent[i]);
+    }
+    fclose(file);
+}
+
+void respondToRequest(char *request, int socket){
+    char ** requestContent = split(request);
+    char *fileContent = "" ;
+    bool responsStatus = true;
+    if(strcmp(requestContent[0], "GET") == 0){
+        fileContent = readFile(requestContent[1]);
+    }
+    else if(strcmp(requestContent[0], "POST") == 0){
+        postFile(requestContent);
+    }
+    else{
+        responsStatus = false;
+    }
+
+    if(responsStatus){
+        strcat(ok,fileContent);
+        printf("200 ok send\n");
+    }
+    else{
+        send(socket , badRequest , strlen(badRequest) , 0 );
+        printf("400 bad request send\n");
+    }
+
+}
+
 int main()
 {
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char ok[1024] = "HTTP/1.0 200 OK\r\n";
+
     char buffer[1024] = {0};
 
 
@@ -97,10 +134,6 @@ int main()
     }
     valread = read( new_socket , buffer, 1024);
     printf("%s\n",buffer );
-    char *fileContent = readFile(buffer);
-    cout<<fileContent;
-    strcat(ok,fileContent);
-    send(new_socket , ok , strlen(ok) , 0 );
-    printf("Hello message sent\n");
+    respondToRequest(buffer, new_socket);
     return 0;
 }
