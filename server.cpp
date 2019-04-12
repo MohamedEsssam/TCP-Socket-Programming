@@ -11,10 +11,9 @@
 using namespace std;
 char ok[1024] = "HTTP/1.0 200 OK\r\n";
 char badRequest[1024] = "HTTP/1.0 400 Bad Request\r\n";
+int contentsize = 0;
 
 char** split(char* line){
-    //Index Variable
-    int position = 0;
     //Array of Strings Where Each Position Has A Part of The Command
     char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
     //A Pointer to Char To Hold Each Token
@@ -30,12 +29,11 @@ char** split(char* line){
     token = strtok(line, " ");
     while (token != NULL)
     {
-        tokens[position] = token;
-        position++;
+        tokens[contentsize++] = token;
         token = strtok(NULL, " ");
 
     }
-    tokens[position] = NULL;
+    tokens[contentsize] = NULL;
     return tokens;
 }
 
@@ -55,7 +53,7 @@ char* readFile(char* fileName){
 
 void postFile(char ** requestContent){
     FILE *file = fopen(requestContent[1],"a+");
-    for (int i = 2; i< sizeof(requestContent); i++){
+    for (int i = 2; i< contentsize; i++){
         fprintf(file, "%s", requestContent[i]);
     }
     fclose(file);
@@ -77,6 +75,7 @@ void respondToRequest(char *request, int socket){
 
     if(responsStatus){
         strcat(ok,fileContent);
+        send(socket , ok , strlen(ok) , 0 );
         printf("200 ok send\n");
     }
     else{
@@ -104,8 +103,7 @@ int main()
     }
 
     // Forcefully attaching socket to the port 8080
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
-                   &opt, sizeof(opt)))
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
     {
         perror("setsockopt");
         exit(EXIT_FAILURE);
@@ -115,8 +113,7 @@ int main()
     address.sin_port = htons( PORT );
 
     // Forcefully attaching socket to the port 8080
-    if (bind(server_fd, (struct sockaddr *)&address,
-             sizeof(address))<0)
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0)
     {
         perror("bind failed");
         exit(EXIT_FAILURE);
@@ -126,8 +123,7 @@ int main()
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
-                             (socklen_t*)&addrlen))<0)
+    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)
     {
         perror("accept");
         exit(EXIT_FAILURE);
