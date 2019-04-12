@@ -10,7 +10,7 @@
 #define BUFFER_SIZE 1024
 using namespace std;
 char buffer[1024] = {0};
-char responseStatus[1024];
+char *responseStatus;
 char badRequest[30] = "HTTP/1.0 400 Bad Request\r\n";
 int contentsize = 0;
 
@@ -18,7 +18,7 @@ char** split(char* line)
 {
     contentsize = 0;
     //Array of Strings Where Each Position Has A Part of The Command
-    char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
+    char **tokens = (char **)malloc(2 * BUFFER_SIZE * sizeof(char *));
     //A Pointer to Char To Hold Each Token
     char *token;
     //This Is Used To Eliminate New Line In The String
@@ -76,10 +76,12 @@ char* readFile(char* fileName)
         printf("file not found\n");
         return "";
     }
-    char *fileContent = (char *) malloc(sizeof(char) * 1024);
+    char *fileContent = (char *) malloc(sizeof(char) * 0);
     char *lineContent = (char *) malloc(sizeof(char) * 1024);
     while (!feof(file))
     {
+        char *temp = (char*) realloc(fileContent, (strlen(fileContent) + 1024) *sizeof(char));
+        fileContent = temp;
         fgets(lineContent, sizeof(file),file);
         strcat(fileContent,lineContent);
         strcpy(lineContent,"\0");
@@ -98,7 +100,8 @@ void postFile(char ** requestContent)
     fclose(file);
 }
 
-int send_image(int socket){
+int send_image(int socket)
+{
 
     FILE *picture;
     int size, read_size, stat, packet_index;
@@ -108,8 +111,10 @@ int send_image(int socket){
     picture = fopen("capture.jpeg", "r");
     printf("Getting Picture Size\n");
 
-    if(picture == NULL) {
-        printf("Error Opening Image File"); }
+    if(picture == NULL)
+    {
+        printf("Error Opening Image File");
+    }
 
     fseek(picture, 0, SEEK_END);
     size = ftell(picture);
@@ -123,23 +128,28 @@ int send_image(int socket){
     //Send Picture as Byte Array
     printf("Sending Picture as Byte Array\n");
 
-    do { //Read while we get errors that are due to signals.
-        stat=read(socket, &read_buffer , 255);
+    do   //Read while we get errors that are due to signals.
+    {
+        stat=read(socket, &read_buffer, 255);
         printf("Bytes read: %i\n",stat);
-    } while (stat < 0);
+    }
+    while (stat < 0);
 
     printf("Received data in socket\n");
     printf("Socket data: %c\n", read_buffer);
 
-    while(!feof(picture)) {
+    while(!feof(picture))
+    {
 
         //Read from the file into our send buffer
         read_size = fread(send_buffer, 1, sizeof(send_buffer)-1, picture);
 
         //Send data through our socket
-        do{
+        do
+        {
             stat = write(socket, send_buffer, read_size);
-        }while (stat < 0);
+        }
+        while (stat < 0);
 
         printf("Packet Number: %i\n",packet_index);
         printf("Packet Size Sent: %i\n",read_size);
@@ -156,12 +166,13 @@ int send_image(int socket){
 char *respondToRequest(char *request, int socket)
 {
     char ** requestContent = split(request);
-    char ** checkImageOrtext = dotSplit(request);
+    //char ** checkImageOrtext = dotSplit(request);
     char *fileContent = "" ;
     bool requestValid = true;
     if(strcmp(requestContent[0], "GET") == 0)
     {
         fileContent = readFile(requestContent[1]);
+        responseStatus = (char*) malloc(sizeof(char) * (strlen(fileContent) + 35));
         if(strcmp(fileContent, "") == 0)
             strcpy(responseStatus, "HTTP/1.0 404 Not Found\r\n");
         else
@@ -179,11 +190,16 @@ char *respondToRequest(char *request, int socket)
 
     if(requestValid)
     {
-        if (strcmp(checkImageOrtext[1],"txt")==0) {
+        if (strcmp(checkImageOrtext[1],"txt")==0)
+        {
             printf("%s", responseStatus);
             strcat(responseStatus, fileContent);
+            //printf("%s", responseStatus);
+            //printf("%d", strlen(responseStatus));
             send(socket, responseStatus, strlen(responseStatus), 0);
-        } else{
+        }
+        else
+        {
             send_image(socket);
         }
     }
