@@ -230,6 +230,16 @@ void *respond(void *new_socket)
 {
     int *temp = (int *) new_socket;
     int newSocketFD = *temp;
+
+    char requestSizeAsString[1024] = {0};
+    read(newSocketFD,requestSizeAsString,1024);
+    requestSizeAsString[strlen(requestSizeAsString)] = '\0';
+    printf("file size as string = : %s\n",requestSizeAsString);
+
+    int requestSizeAsInt = atoi(requestSizeAsString);
+    char buffer[requestSizeAsInt];
+
+
     read(newSocketFD, buffer, 1024);
     printf("request: %s\n",buffer);
     respondToRequest(buffer, newSocketFD);

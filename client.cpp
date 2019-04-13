@@ -3,13 +3,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <sstream>
 #include <unistd.h>
 #include "./ClientHelperFunctions.h"
 #define PORT 8080
 
 using namespace std;
 
-int main() {
+int main()
+{
     int mySocket, connStatus, valread;
     struct sockaddr_in serv_addr;
     char input[100];
@@ -51,16 +53,47 @@ int main() {
     cout<<input;
     char input2[100] = {0};
     strcpy(input2,input);
-    send(mySocket , input , strlen(input) , 0 );
+    //send(mySocket, input, strlen(input), 0 );
     char* requestType = checkRequest(input);
     if(strcmp(requestType,"GET")==0)
     {
+        stringstream temp;
+        temp << (int)strlen(input);
+        string str = temp.str();
+        char const *requestSize = str.c_str();
+
+        printf("request size = %s\n", requestSize);
+
+        send(mySocket, requestSize, strlen(requestSize), 0);
+        temp.str("");
+
+        printf("request : %s\n", input);
+
+        sleep(2);
+
+        send(mySocket, input, strlen(input), 0 );
         split(input2);
-       recieveFile(mySocket);
+        recieveFile(mySocket);
     }
 
     else if(requestType == "POST")
     {
+        split(input2);
+        strcat(input, " ");
+        strcat(input, readSentFile());
+
+        stringstream temp;
+        temp << (int)strlen(input);
+        string str = temp.str();
+        char const *requestSize = str.c_str();
+
+        send(mySocket, requestSize, strlen(requestSize), 0);
+        temp.str("");
+
+        sleep(2);
+
+        send(mySocket, input, strlen(input), 0 );
+
 
     }
     recv(mySocket,buffer,BUFSIZ,0);

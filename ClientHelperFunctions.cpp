@@ -204,6 +204,29 @@ int recieveImage(int socket)
     return 1;
 }
 
+char *readSentFile(){
+
+FILE *file = fopen(fileName,"r");
+    if (!file)
+    {
+        printf("file not found\n");
+        return "";
+    }
+    char *fileContent = (char *) malloc(sizeof(char) * 0);
+    char *lineContent = (char *) malloc(sizeof(char) * 1024);
+    while (!feof(file))
+    {
+        char *temp = (char*) realloc(fileContent, (strlen(fileContent) + 1024) *sizeof(char));
+        fileContent = temp;
+        fgets(lineContent, sizeof(file),file);
+        strcat(fileContent,lineContent);
+        strcpy(lineContent,"\0");
+    }
+    strcat(fileContent,lineContent);
+    fclose(file);
+    return fileContent;
+}
+
 int recieveFile(int socket)
 {
     char filesize[1024] = {0};
