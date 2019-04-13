@@ -24,9 +24,9 @@ char** split(char* line)
     char *token;
     //This Is Used To Eliminate New Line In The String
     //Because It Causes Issues For strtok
-    char *newline = strchr(line,'\n');
-    if ( newline )
-        *newline = 0;
+    //char *newline = strchr(line,'\n');
+    //if ( newline )
+        //*newline = 0;
 
     //strtok Is Used To Break Command Into a Series of Tokens Using
     //Delimeter " "->Space
@@ -193,13 +193,6 @@ char *respondToRequest(char *request, int socket)
 
     if(requestValid)
     {
-        //if (strcmp(checkImageOrtext[1],"txt")==0)
-        //{
-            printf("%s", responseStatus);
-            //strcat(responseStatus, fileContent);
-            printf("%s", responseStatus);
-            //printf("%d", strlen(responseStatus));
-
             stringstream temp;
             temp << (int)strlen(responseStatus);
             string str = temp.str();
@@ -217,11 +210,6 @@ char *respondToRequest(char *request, int socket)
             send(socket, fileContent, strlen(fileContent), 0);
 
             close(socket);
-        //}
-        //else
-        //{
-            //send_image(socket);
-        //}
     }
     else
     {
@@ -239,7 +227,6 @@ void *respond(void *new_socket)
     char requestSizeAsString[1024] = {0};
     read(newSocketFD,requestSizeAsString,1024);
     requestSizeAsString[strlen(requestSizeAsString)] = '\0';
-    printf("file size as string = : %s\n",requestSizeAsString);
 
     int requestSizeAsInt = atoi(requestSizeAsString);
     char buffer[requestSizeAsInt];
@@ -247,7 +234,7 @@ void *respond(void *new_socket)
 
 
     read(newSocketFD, buffer, 1024);
-    printf("request: %s\n",buffer);
+
     respondToRequest(buffer, newSocketFD);
     memset(buffer, 0, sizeof(buffer));
 }
