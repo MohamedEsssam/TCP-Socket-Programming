@@ -58,7 +58,7 @@ int main()
     if(strcmp(requestType,"GET")==0)
     {
         stringstream temp;
-        temp << (int)strlen(input);
+        temp << (int)strlen(input2);
         string str = temp.str();
         char const *requestSize = str.c_str();
 
@@ -67,33 +67,37 @@ int main()
         send(mySocket, requestSize, strlen(requestSize), 0);
         temp.str("");
 
-        printf("request : %s\n", input);
+        printf("request : %s\n", input2);
 
         sleep(2);
 
-        send(mySocket, input, strlen(input), 0 );
+        send(mySocket, input2, strlen(input2), 0 );
         split(input2);
         recieveFile(mySocket);
     }
 
-    else if(requestType == "POST")
+    else if(strcmp(requestType, "POST") == 0)
     {
-        split(input2);
-        strcat(input, " ");
-        strcat(input, readSentFile());
+        char postedFile[1024];
+        strcpy(postedFile, input2);
+        split(postedFile);
+        strcat(input2, " ");
+        strcat(input2, readSentFile());
 
         stringstream temp;
-        temp << (int)strlen(input);
+        temp << (int)strlen(input2);
         string str = temp.str();
         char const *requestSize = str.c_str();
+
+        printf("request size = %s\n", requestSize);
 
         send(mySocket, requestSize, strlen(requestSize), 0);
         temp.str("");
 
         sleep(2);
 
-        send(mySocket, input, strlen(input), 0 );
-
+        printf("request : %s\n", input2);
+        send(mySocket, input2, strlen(input2), 0 );
 
     }
     recv(mySocket,buffer,BUFSIZ,0);

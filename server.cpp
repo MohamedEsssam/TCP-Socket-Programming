@@ -94,7 +94,7 @@ char* readFile(char* fileName)
 
 void postFile(char ** requestContent)
 {
-    FILE *file = fopen(requestContent[1],"a+");
+    FILE *file = fopen(requestContent[1],"w");
     for (int i = 2; i< contentsize; i++)
     {
         fprintf(file, "%s ", requestContent[i]);
@@ -183,6 +183,7 @@ char *respondToRequest(char *request, int socket)
     else if(strcmp(requestContent[0], "POST") == 0)
     {
         postFile(requestContent);
+        responseStatus = (char*) malloc(sizeof(char) * (strlen(fileContent) + 35));
         strcpy(responseStatus, "HTTP/1.0 200 OK\r\n");
     }
     else
@@ -195,7 +196,7 @@ char *respondToRequest(char *request, int socket)
         //if (strcmp(checkImageOrtext[1],"txt")==0)
         //{
             printf("%s", responseStatus);
-            strcat(responseStatus, fileContent);
+            //strcat(responseStatus, fileContent);
             printf("%s", responseStatus);
             //printf("%d", strlen(responseStatus));
 
@@ -207,9 +208,13 @@ char *respondToRequest(char *request, int socket)
             send(socket, responseSize, strlen(responseSize), 0);
             temp.str("");
 
-            sleep(2);
+            sleep(1);
 
             send(socket, responseStatus, strlen(responseStatus), 0);
+
+            sleep(1);
+
+            send(socket, fileContent, strlen(fileContent), 0);
 
             close(socket);
         //}
@@ -238,6 +243,7 @@ void *respond(void *new_socket)
 
     int requestSizeAsInt = atoi(requestSizeAsString);
     char buffer[requestSizeAsInt];
+    buffer[requestSizeAsInt] = '\0';
 
 
     read(newSocketFD, buffer, 1024);

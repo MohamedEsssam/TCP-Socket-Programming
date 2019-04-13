@@ -232,9 +232,16 @@ int recieveFile(int socket)
     char filesize[1024] = {0};
     read(socket,filesize,1024);
     filesize[strlen(filesize)] = '\0';
-    printf("file size as string = : %s",filesize);
+    printf("file size as string = : %s\n",filesize);
+
     int fsize = atoi(filesize);
     char buffer[fsize];
+    char respondStatus[30];
+    read(socket, respondStatus, 30);
+
+    printf("status : %s\n", respondStatus);
+
+
     if(strcmp(fileType,"txt")==0 || strcmp(fileType,"html")==0)
     {
         read(socket,buffer,fsize);
