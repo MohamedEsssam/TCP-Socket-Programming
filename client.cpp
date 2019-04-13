@@ -4,13 +4,14 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
-
+#include "./ClientHelperFunctions.h"
 #define PORT 8080
+
 using namespace std;
+
 int main() {
     int mySocket, connStatus, valread;
     struct sockaddr_in serv_addr;
-    char *message = "Hello from client";
     char input[100];
     char buffer[1024] = {0};
     FILE *received_file;
@@ -47,7 +48,12 @@ int main() {
 
     cout<<"Enter Command: ";
     cin.get(input, 100);
+    cout<<input;
+    char* fileType = getFileType(input);
     send(mySocket , input , strlen(input) , 0 );
+    recv(mySocket,buffer,BUFSIZ,0);
+    cout<<fileType;
+    //recieveImage(mySocket);
 //    printf("Hello message sent\n");
 //
 //    recv(mySocket, buffer, BUFSIZ, 0);
