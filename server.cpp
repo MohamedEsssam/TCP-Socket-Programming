@@ -18,7 +18,7 @@ char** split(char* line)
 {
     contentsize = 0;
     //Array of Strings Where Each Position Has A Part of The Command
-    char **tokens = (char **)malloc(2 * BUFFER_SIZE * sizeof(char *));
+    char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
     //A Pointer to Char To Hold Each Token
     char *token;
     //This Is Used To Eliminate New Line In The String
