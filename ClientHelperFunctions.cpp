@@ -2,8 +2,10 @@
 // Created by rami96 on 4/13/19.
 //
 #include "ClientHelperFunctions.h"
+char* fileName;
+char fileType[100] = {0} ;
 
-char* getFileType(char* line)
+void split(char* line)
 {   int index = 0;
     //Array of Strings Where Each Position Has A Part of The Command
     char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
@@ -25,11 +27,13 @@ char* getFileType(char* line)
 
     }
     tokens[index] = NULL;
-    char* type = dotSplit(tokens[1]);
-    return type;
+    fileName = tokens[1];
+    char file[100] = {0};
+    strcpy(file,fileName);
+    dotSplit(file);
 }
 
-char* dotSplit(char* line)
+void dotSplit(char* line)
 {
     int index = 0;
     //Array of Strings Where Each Position Has A Part of The Command
@@ -52,7 +56,8 @@ char* dotSplit(char* line)
 
     }
     tokens[index] = NULL;
-    return tokens[1];
+
+    strcpy(fileType,tokens[1]);
 }
 
 char* checkRequest(char* line)
@@ -199,25 +204,28 @@ int recieveImage(int socket)
     return 1;
 }
 
-int recieveFile(int socket,char* input)
+int recieveFile(int socket)
 {
     char filesize[1024] = {0};
-    char* fileName = getFileName(input);
-    char* fileType = getFileType(input);
     read(socket,filesize,1024);
     filesize[strlen(filesize)] = '\0';
     printf("file size as string = : %s",filesize);
     int fsize = atoi(filesize);
     char buffer[fsize];
-    if(strcmp(fileType,"txt")==0)
+    if(strcmp(fileType,"txt")==0 || strcmp(fileType,"html")==0)
     {
         read(socket,buffer,fsize);
         buffer[fsize] = '\0';
-        printf("%s",buffer);
+        //printf("%s",buffer);
         FILE *file;
         file = fopen(fileName, "w");
         fprintf(file,"%s",buffer);
         memset(buffer,0,strlen(buffer));
         fclose(file);
+    }
+
+    else if(strcmp(fileType,"jpg"))
+    {
+
     }
 }

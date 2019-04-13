@@ -49,11 +49,14 @@ int main() {
     cout<<"Enter Command: ";
     cin.get(input, 100);
     cout<<input;
+    char input2[100] = {0};
+    strcpy(input2,input);
     send(mySocket , input , strlen(input) , 0 );
     char* requestType = checkRequest(input);
     if(strcmp(requestType,"GET")==0)
     {
-       recieveFile(mySocket,input);
+        split(input2);
+       recieveFile(mySocket);
     }
 
     else if(requestType == "POST")
