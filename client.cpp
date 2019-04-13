@@ -49,34 +49,19 @@ int main() {
     cout<<"Enter Command: ";
     cin.get(input, 100);
     cout<<input;
-    char* fileType = getFileType(input);
     send(mySocket , input , strlen(input) , 0 );
+    char* requestType = checkRequest(input);
+    if(requestType == "GET")
+    {
+       char* fileType = getFileType(input);
+       recieveFile(fileType);
+    }
+
+    else if(requestType == "POST")
+    {
+
+    }
     recv(mySocket,buffer,BUFSIZ,0);
-    cout<<fileType;
-    //recieveImage(mySocket);
-//    printf("Hello message sent\n");
-//
-//    recv(mySocket, buffer, BUFSIZ, 0);
-//    file_size = atoi(buffer);
-//    //fprintf(stdout, "\nFile size : %d\n", file_size);
-//
-//    received_file = fopen("index.txt", "w");
-//    if (received_file == NULL)
-//    {
-//        fprintf(stderr, "Failed to open file foo --> %s\n", strerror(errno));
-//
-//        exit(EXIT_FAILURE);
-//    }
-//
-//    remain_data = file_size;
-//
-//    while ((remain_data > 0) && ((len = recv(mySocket, buffer, BUFSIZ, 0)) > 0))
-//    {
-//        fwrite(buffer, sizeof(char), len, received_file);
-//        remain_data -= len;
-//        fprintf(stdout, "Receive %d bytes and we hope :- %d bytes\n", len, remain_data);
-//    }
-//    fclose(received_file);
 
     close(mySocket);
     return 0;
