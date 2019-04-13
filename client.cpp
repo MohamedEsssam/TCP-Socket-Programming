@@ -51,10 +51,9 @@ int main() {
     cout<<input;
     send(mySocket , input , strlen(input) , 0 );
     char* requestType = checkRequest(input);
-    if(requestType == "GET")
+    if(strcmp(requestType,"GET")==0)
     {
-       char* fileType = getFileType(input);
-       recieveFile(fileType);
+       recieveFile(mySocket,input);
     }
 
     else if(requestType == "POST")

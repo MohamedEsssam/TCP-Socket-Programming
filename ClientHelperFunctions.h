@@ -14,6 +14,7 @@
 char* getFileType(char *line);
 char* dotSplit(char* line);
 int recieveImage(int socket);
-int recieveFile(char* fileType);
+int recieveFile(int socket,char* fileType);
 char* checkRequest(char* line);
+char* getFileName(char* line);
 #endif //TCP_SOCKET_PROGRAMMING_CLIENTHELPERFUNCTIONS_H

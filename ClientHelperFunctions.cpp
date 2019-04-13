@@ -81,6 +81,32 @@ char* checkRequest(char* line)
     return tokens[0];
 }
 
+char* getFileName(char* line)
+{
+    int index = 0;
+    //Array of Strings Where Each Position Has A Part of The Command
+    char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
+    //A Pointer to Char To Hold Each Token
+    char *token;
+    //This Is Used To Eliminate New Line In The String
+    //Because It Causes Issues For strtok
+    char *newline = strchr(line,'\n');
+    if ( newline )
+        *newline = 0;
+
+    //strtok Is Used To Break Command Into a Series of Tokens Using
+    //Delimeter " "->Space
+    token = strtok(line, " ");
+    while (token != NULL)
+    {
+        tokens[index++] = token;
+        token = strtok(NULL, " ");
+
+    }
+    tokens[index] = NULL;
+    return tokens[1];
+}
+
 int recieveImage(int socket)
 { // Start function
 
@@ -173,12 +199,25 @@ int recieveImage(int socket)
     return 1;
 }
 
-int recieveFile(char* fileType)
+int recieveFile(int socket,char* input)
 {
-
-    if(fileType == "txt")
+    char filesize[1024] = {0};
+    char* fileName = getFileName(input);
+    char* fileType = getFileType(input);
+    read(socket,filesize,1024);
+    filesize[strlen(filesize)] = '\0';
+    printf("file size as string = : %s",filesize);
+    int fsize = atoi(filesize);
+    char buffer[fsize];
+    if(strcmp(fileType,"txt")==0)
     {
-        FILE *image;
-
+        read(socket,buffer,fsize);
+        buffer[fsize] = '\0';
+        printf("%s",buffer);
+        FILE *file;
+        file = fopen(fileName, "w");
+        fprintf(file,"%s",buffer);
+        memset(buffer,0,strlen(buffer));
+        fclose(file);
     }
 }
