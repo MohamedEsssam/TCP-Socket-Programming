@@ -6,6 +6,7 @@
 #include <string.h>
 #include <iostream>
 #include <pthread.h>
+#include <sstream>
 #define PORT 8080
 #define BUFFER_SIZE 1024
 using namespace std;
@@ -18,7 +19,7 @@ char** split(char* line)
 {
     contentsize = 0;
     //Array of Strings Where Each Position Has A Part of The Command
-    char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
+    char **tokens = (char **)malloc(2 * BUFFER_SIZE * sizeof(char *));
     //A Pointer to Char To Hold Each Token
     char *token;
     //This Is Used To Eliminate New Line In The String
@@ -86,6 +87,7 @@ char* readFile(char* fileName)
         strcat(fileContent,lineContent);
         strcpy(lineContent,"\0");
     }
+    strcat(fileContent,lineContent);
     fclose(file);
     return fileContent;
 }
@@ -190,18 +192,31 @@ char *respondToRequest(char *request, int socket)
 
     if(requestValid)
     {
-        if (strcmp(checkImageOrtext[1],"txt")==0)
-        {
+        //if (strcmp(checkImageOrtext[1],"txt")==0)
+        //{
             printf("%s", responseStatus);
             strcat(responseStatus, fileContent);
-            //printf("%s", responseStatus);
+            printf("%s", responseStatus);
             //printf("%d", strlen(responseStatus));
+
+            stringstream temp;
+            temp << (int)strlen(responseStatus);
+            string str = temp.str();
+            char const *responseSize = str.c_str();
+
+            send(socket, responseSize, strlen(responseSize), 0);
+            temp.str("");
+
+            sleep(2);
+
             send(socket, responseStatus, strlen(responseStatus), 0);
-        }
-        else
-        {
-            send_image(socket);
-        }
+
+            close(socket);
+        //}
+        //else
+        //{
+            //send_image(socket);
+        //}
     }
     else
     {
@@ -213,12 +228,12 @@ char *respondToRequest(char *request, int socket)
 
 void *respond(void *new_socket)
 {
-
     int *temp = (int *) new_socket;
     int newSocketFD = *temp;
     read(newSocketFD, buffer, 1024);
-    printf("%s\n",buffer);
+    printf("request: %s\n",buffer);
     respondToRequest(buffer, newSocketFD);
+    memset(buffer, 0, sizeof(buffer));
 }
 
 
@@ -228,7 +243,7 @@ int main()
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    pthread_t respondThread;
+
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -268,7 +283,9 @@ int main()
             exit(EXIT_FAILURE);
         }
 
+        pthread_t respondThread;
         pthread_create(&respondThread, NULL, respond, (void*) &new_socket);
+        pthread_detach(respondThread);
     }
 
     return 0;
