@@ -209,6 +209,8 @@ int recieveFile(int socket)
 
     respondStatus[strlen(respondStatus) - 1] = '\0';
     printf("%s",respondStatus);
+
+
     char filesize[1024] = {0};
     read(socket,filesize,1024);
     filesize[strlen(filesize)] = '\0';

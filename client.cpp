@@ -55,7 +55,7 @@ int main()
     strcpy(input2,input);
     //send(mySocket, input, strlen(input), 0 );
     char* requestType = checkRequest(input);
-    if(strcmp(requestType,"GET")==0)
+    if(strcmp(requestType,"POST")!=0)
     {
         stringstream temp;
         temp << (int)strlen(input2);
@@ -80,18 +80,25 @@ int main()
     {
         char postedFile[1024];
         strcpy(postedFile, input2);
+
         split(postedFile);
         strcat(input2, " ");
-        char* temp2 = "";
+        char *temp2 = (char *)malloc(strlen(input2) * sizeof(char));
         strcpy(temp2,input2);
-        strcat(input2, readSentFile());
-        if(strcmp(input2,temp2)!=0)
-        {
 
+
+        strcat(input2, readSentFile());
+
+
+        if(strcmp(input2,temp2) == 0)
+        {
             printf("File Not Found");
             close(mySocket);
             return 0;
         }
+
+
+
         stringstream temp;
         temp << (int)strlen(input2);
         string str = temp.str();

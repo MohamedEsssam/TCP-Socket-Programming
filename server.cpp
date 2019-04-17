@@ -45,7 +45,7 @@ char** split(char* line)
 
 void dotSplit(char* line)
 {
-    contentsize = 0;
+    int index = 0;
     //Array of Strings Where Each Position Has A Part of The Command
     char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
     //A Pointer to Char To Hold Each Token
@@ -61,13 +61,12 @@ void dotSplit(char* line)
     token = strtok(line, ".");
     while (token != NULL)
     {
-        tokens[contentsize++] = token;
+        tokens[index++] = token;
         token = strtok(NULL, ".");
 
     }
-    tokens[contentsize] = NULL;
+    tokens[index] = NULL;
     strcpy(fileType,tokens[1]);
-    printf("%s",fileType);
 }
 
 
@@ -97,6 +96,7 @@ char* readFile(char* fileName)
 void postFile(char ** requestContent)
 {
     FILE *file = fopen(requestContent[1],"w");
+
     for (int i = 2; i< contentsize; i++)
     {
         fprintf(file, "%s ", requestContent[i]);
@@ -171,17 +171,22 @@ char *respondToRequest(char *request, int socket)
 {
     char ** requestContent = split(request);
     strcpy(tempName,requestContent[1]);
-    dotSplit(tempName);
+    printf("file name: %s\n", tempName);
     //char ** checkImageOrtext = dotSplit(request);
     char *fileContent = "" ;
     bool requestValid = true;
+
+    printf("request type : %s\n", requestContent[0]);
     if(strcmp(requestContent[0], "GET") == 0)
     {
+        dotSplit(tempName);
+        printf("file type: %s\n", fileType);
         if(strcmp(fileType,"jpg")==0)
         {
             send_image(socket);
         }
-        else {
+        else
+        {
             fileContent = readFile(requestContent[1]);
             responseStatus = (char *) malloc(sizeof(char) * (strlen(fileContent) + 35));
 
@@ -208,7 +213,7 @@ char *respondToRequest(char *request, int socket)
 
         send(socket, responseStatus, strlen(responseStatus), 0);
         sleep(1);
-    if(strcmp(requestContent[0],"GET")==0) {
+
         stringstream temp;
         temp << (int)strlen(fileContent);
         string str = temp.str();
@@ -219,13 +224,14 @@ char *respondToRequest(char *request, int socket)
 
         sleep(1);
         send(socket, fileContent, strlen(fileContent), 0);
-    }
+
         close(socket);
     }
     else
     {
         send(socket, badRequest, strlen(badRequest), 0 );
         printf("%s", badRequest);
+        close(socket);
     }
 
 }
@@ -245,6 +251,8 @@ void *respond(void *new_socket)
 
 
     read(newSocketFD, buffer, 1024);
+
+    printf("New Request : %s\n", buffer);
 
     respondToRequest(buffer, newSocketFD);
     memset(buffer, 0, sizeof(buffer));
