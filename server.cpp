@@ -14,7 +14,8 @@ char buffer[1024] = {0};
 char *responseStatus;
 char badRequest[30] = "HTTP/1.0 400 Bad Request\r\n";
 int contentsize = 0;
-
+char tempName[100] = {0};
+char fileType[100] = {0};
 char** split(char* line)
 {
     contentsize = 0;
@@ -26,7 +27,7 @@ char** split(char* line)
     //Because It Causes Issues For strtok
     //char *newline = strchr(line,'\n');
     //if ( newline )
-        //*newline = 0;
+    //*newline = 0;
 
     //strtok Is Used To Break Command Into a Series of Tokens Using
     //Delimeter " "->Space
@@ -42,7 +43,7 @@ char** split(char* line)
 }
 
 
-char** dotSplit(char* line)
+void dotSplit(char* line)
 {
     contentsize = 0;
     //Array of Strings Where Each Position Has A Part of The Command
@@ -65,7 +66,8 @@ char** dotSplit(char* line)
 
     }
     tokens[contentsize] = NULL;
-    return tokens;
+    strcpy(fileType,tokens[1]);
+    printf("%s",fileType);
 }
 
 
@@ -110,7 +112,7 @@ int send_image(int socket)
     char send_buffer[10240], read_buffer[256];
     packet_index = 1;
 
-    picture = fopen("capture.jpeg", "r");
+    picture = fopen("3.jpg", "r");
     printf("Getting Picture Size\n");
 
     if(picture == NULL)
@@ -168,17 +170,27 @@ int send_image(int socket)
 char *respondToRequest(char *request, int socket)
 {
     char ** requestContent = split(request);
+    strcpy(tempName,requestContent[1]);
+    dotSplit(tempName);
     //char ** checkImageOrtext = dotSplit(request);
     char *fileContent = "" ;
     bool requestValid = true;
     if(strcmp(requestContent[0], "GET") == 0)
     {
-        fileContent = readFile(requestContent[1]);
-        responseStatus = (char*) malloc(sizeof(char) * (strlen(fileContent) + 35));
-        if(strcmp(fileContent, "") == 0)
-            strcpy(responseStatus, "HTTP/1.0 404 Not Found\r\n");
-        else
-            strcpy(responseStatus, "HTTP/1.0 200 OK\r\n");
+        if(strcmp(fileType,"jpg")==0)
+        {
+            send_image(socket);
+        }
+        else {
+            fileContent = readFile(requestContent[1]);
+            responseStatus = (char *) malloc(sizeof(char) * (strlen(fileContent) + 35));
+
+
+            if (strcmp(fileContent, "") == 0)
+                strcpy(responseStatus, "HTTP/1.0 404 Not Found\r\n");
+            else
+                strcpy(responseStatus, "HTTP/1.0 200 OK\r\n");
+        }
     }
     else if(strcmp(requestContent[0], "POST") == 0)
     {
@@ -193,23 +205,22 @@ char *respondToRequest(char *request, int socket)
 
     if(requestValid)
     {
-            stringstream temp;
-            temp << (int)strlen(responseStatus);
-            string str = temp.str();
-            char const *responseSize = str.c_str();
 
-            send(socket, responseSize, strlen(responseSize), 0);
-            temp.str("");
+        send(socket, responseStatus, strlen(responseStatus), 0);
+        sleep(1);
+    if(strcmp(requestContent[0],"GET")==0) {
+        stringstream temp;
+        temp << (int)strlen(fileContent);
+        string str = temp.str();
+        char const *responseSize = str.c_str();
 
-            sleep(1);
+        send(socket, responseSize, strlen(responseSize), 0);
+        temp.str("");
 
-            send(socket, responseStatus, strlen(responseStatus), 0);
-
-            sleep(1);
-
-            send(socket, fileContent, strlen(fileContent), 0);
-
-            close(socket);
+        sleep(1);
+        send(socket, fileContent, strlen(fileContent), 0);
+    }
+        close(socket);
     }
     else
     {

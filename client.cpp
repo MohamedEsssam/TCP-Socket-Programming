@@ -50,7 +50,7 @@ int main()
 
     cout<<"Enter Command: ";
     cin.get(input, 100);
-    cout<<input;
+    cout<<input<<"\n";
     char input2[100] = {0};
     strcpy(input2,input);
     //send(mySocket, input, strlen(input), 0 );
@@ -82,8 +82,16 @@ int main()
         strcpy(postedFile, input2);
         split(postedFile);
         strcat(input2, " ");
+        char* temp2 = "";
+        strcpy(temp2,input2);
         strcat(input2, readSentFile());
+        if(strcmp(input2,temp2)!=0)
+        {
 
+            printf("File Not Found");
+            close(mySocket);
+            return 0;
+        }
         stringstream temp;
         temp << (int)strlen(input2);
         string str = temp.str();
@@ -98,9 +106,11 @@ int main()
 
         printf("request : %s\n", input2);
         send(mySocket, input2, strlen(input2), 0 );
+        memset(input2,0,100);
+        read(mySocket,input2,100);
+        printf("%s",input2);
 
     }
-    recv(mySocket,buffer,BUFSIZ,0);
 
     close(mySocket);
     return 0;

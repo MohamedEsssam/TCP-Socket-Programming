@@ -86,32 +86,6 @@ char* checkRequest(char* line)
     return tokens[0];
 }
 
-char* getFileName(char* line)
-{
-    int index = 0;
-    //Array of Strings Where Each Position Has A Part of The Command
-    char **tokens = (char **)malloc(BUFFER_SIZE * sizeof(char *));
-    //A Pointer to Char To Hold Each Token
-    char *token;
-    //This Is Used To Eliminate New Line In The String
-    //Because It Causes Issues For strtok
-    char *newline = strchr(line,'\n');
-    if ( newline )
-        *newline = 0;
-
-    //strtok Is Used To Break Command Into a Series of Tokens Using
-    //Delimeter " "->Space
-    token = strtok(line, " ");
-    while (token != NULL)
-    {
-        tokens[index++] = token;
-        token = strtok(NULL, " ");
-
-    }
-    tokens[index] = NULL;
-    return tokens[1];
-}
-
 int recieveImage(int socket)
 { // Start function
 
@@ -121,11 +95,11 @@ int recieveImage(int socket)
     FILE *image;
 
 //Find the size of the image
-    do{
-        stat = read(socket, &size, sizeof(int));
-    }while(stat<0);
+//    do{
+//        stat = read(socket, &size, sizeof(int));
+//    }while(stat<0);
 
-    //size = 114270;
+    size = 114270;
     printf("Packet received.\n");
     printf("Packet size: %i\n",stat);
     printf("Image size: %i\n",size);
@@ -141,7 +115,7 @@ int recieveImage(int socket)
     printf("Reply sent\n");
     printf(" \n");
 
-    image = fopen("capture2.jpeg", "w");
+    image = fopen("capture2.jpg", "w");
 
     if( image == NULL) {
         printf("Error has occurred. Image file could not be opened\n");
@@ -229,17 +203,18 @@ FILE *file = fopen(fileName,"r");
 
 int recieveFile(int socket)
 {
+
+    char respondStatus[30];
+    read(socket, respondStatus, 30);
+
+    respondStatus[strlen(respondStatus) - 1] = '\0';
+    printf("%s",respondStatus);
     char filesize[1024] = {0};
     read(socket,filesize,1024);
     filesize[strlen(filesize)] = '\0';
 
     int fsize = atoi(filesize);
     char buffer[fsize];
-    char respondStatus[30];
-    read(socket, respondStatus, 30);
-
-    respondStatus[strlen(respondStatus) - 1] = '\0';
-
 
 
     if(strcmp(fileType,"txt")==0 || strcmp(fileType,"html")==0)
@@ -255,8 +230,8 @@ int recieveFile(int socket)
         fclose(file);
     }
 
-    else if(strcmp(fileType,"jpg"))
+    else if(strcmp(fileType,"jpg")==0)
     {
-
+        recieveImage(socket);
     }
 }
