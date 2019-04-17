@@ -12,7 +12,6 @@
 using namespace std;
 char buffer[1024] = {0};
 char *responseStatus;
-char badRequest[30] = "HTTP/1.0 400 Bad Request\r\n";
 int contentsize = 0;
 char tempName[100] = {0};
 char fileType[100] = {0};
@@ -175,6 +174,7 @@ char *respondToRequest(char *request, int socket)
     //char ** checkImageOrtext = dotSplit(request);
     char *fileContent = "" ;
     bool requestValid = true;
+    responseStatus = (char *) malloc(sizeof(char) * (35));
 
     printf("request type : %s\n", requestContent[0]);
     if(strcmp(requestContent[0], "GET") == 0)
@@ -188,7 +188,6 @@ char *respondToRequest(char *request, int socket)
         else
         {
             fileContent = readFile(requestContent[1]);
-            responseStatus = (char *) malloc(sizeof(char) * (strlen(fileContent) + 35));
 
 
             if (strcmp(fileContent, "") == 0)
@@ -200,39 +199,26 @@ char *respondToRequest(char *request, int socket)
     else if(strcmp(requestContent[0], "POST") == 0)
     {
         postFile(requestContent);
-        responseStatus = (char*) malloc(sizeof(char) * (strlen(fileContent) + 35));
         strcpy(responseStatus, "HTTP/1.0 200 OK\r\n");
     }
-    else
-    {
-        requestValid = false;
-    }
 
-    if(requestValid)
-    {
+    printf("respond status : %s\n", responseStatus);
+    send(socket, responseStatus, strlen(responseStatus), 0);
+    sleep(1);
 
-        send(socket, responseStatus, strlen(responseStatus), 0);
-        sleep(1);
+    stringstream temp;
+    temp << (int)strlen(fileContent);
+    string str = temp.str();
+    char const *responseSize = str.c_str();
 
-        stringstream temp;
-        temp << (int)strlen(fileContent);
-        string str = temp.str();
-        char const *responseSize = str.c_str();
+    send(socket, responseSize, strlen(responseSize), 0);
+    temp.str("");
 
-        send(socket, responseSize, strlen(responseSize), 0);
-        temp.str("");
+    sleep(1);
+    send(socket, fileContent, strlen(fileContent), 0);
 
-        sleep(1);
-        send(socket, fileContent, strlen(fileContent), 0);
+    close(socket);
 
-        close(socket);
-    }
-    else
-    {
-        send(socket, badRequest, strlen(badRequest), 0 );
-        printf("%s", badRequest);
-        close(socket);
-    }
 
 }
 
@@ -246,16 +232,21 @@ void *respond(void *new_socket)
     requestSizeAsString[strlen(requestSizeAsString)] = '\0';
 
     int requestSizeAsInt = atoi(requestSizeAsString);
-    char buffer[requestSizeAsInt];
-    buffer[requestSizeAsInt] = '\0';
+
+    if (requestSizeAsInt != 0)
+    {
+
+        char buffer[requestSizeAsInt];
+        buffer[requestSizeAsInt] = '\0';
 
 
-    read(newSocketFD, buffer, 1024);
+        read(newSocketFD, buffer, 1024);
 
-    printf("New Request : %s\n", buffer);
+        printf("New Request : %s\n", buffer);
 
-    respondToRequest(buffer, newSocketFD);
-    memset(buffer, 0, sizeof(buffer));
+        respondToRequest(buffer, newSocketFD);
+        memset(buffer, 0, sizeof(buffer));
+    }
 }
 
 

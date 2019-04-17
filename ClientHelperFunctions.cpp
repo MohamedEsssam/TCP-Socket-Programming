@@ -183,7 +183,6 @@ char *readSentFile(){
 FILE *file = fopen(fileName,"r");
     if (!file)
     {
-        printf("file not found\n");
         return "";
     }
     char *fileContent = (char *) malloc(sizeof(char) * 0);
@@ -201,14 +200,14 @@ FILE *file = fopen(fileName,"r");
     return fileContent;
 }
 
-int recieveFile(int socket)
+void recieveFile(int socket)
 {
 
-    char respondStatus[30];
-    read(socket, respondStatus, 30);
+    char respondStatus[50];
+    read(socket, respondStatus, 50);
 
-    respondStatus[strlen(respondStatus) - 1] = '\0';
-    printf("%s",respondStatus);
+    respondStatus[strlen(respondStatus)] = '\0';
+    printf("%s\n",respondStatus);
 
 
     char filesize[1024] = {0};

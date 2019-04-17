@@ -55,7 +55,7 @@ int main()
     strcpy(input2,input);
     //send(mySocket, input, strlen(input), 0 );
     char* requestType = checkRequest(input);
-    if(strcmp(requestType,"POST")!=0)
+    if(strcmp(requestType,"GET") == 0)
     {
         stringstream temp;
         temp << (int)strlen(input2);
@@ -92,7 +92,7 @@ int main()
 
         if(strcmp(input2,temp2) == 0)
         {
-            printf("File Not Found");
+            printf("File Not Found\n");
             close(mySocket);
             return 0;
         }
@@ -117,6 +117,9 @@ int main()
         read(mySocket,input2,100);
         printf("%s",input2);
 
+    }
+    else{
+        printf("Not a Request\n");
     }
 
     close(mySocket);
