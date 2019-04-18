@@ -183,6 +183,7 @@ char *readSentFile(){
 FILE *file = fopen(fileName,"r");
     if (!file)
     {
+        printf("file not found\n");
         return "";
     }
     char *fileContent = (char *) malloc(sizeof(char) * 0);
@@ -200,39 +201,42 @@ FILE *file = fopen(fileName,"r");
     return fileContent;
 }
 
-void recieveFile(int socket)
+int recieveFile(int socket)
 {
-
-    char respondStatus[50];
-    read(socket, respondStatus, 50);
-
-    respondStatus[strlen(respondStatus)] = '\0';
-    printf("%s\n",respondStatus);
-
-
-    char filesize[1024] = {0};
-    read(socket,filesize,1024);
-    filesize[strlen(filesize)] = '\0';
-
-    int fsize = atoi(filesize);
-    char buffer[fsize];
-
-
-    if(strcmp(fileType,"txt")==0 || strcmp(fileType,"html")==0)
-    {
-        read(socket,buffer,fsize);
-        buffer[fsize] = '\0';
-
-        FILE *file;
-        file = fopen(fileName, "w");
-        fprintf(file,"%s",buffer);
-        memset(buffer,0,strlen(buffer));
-        memset(respondStatus, 0, strlen(respondStatus));
-        fclose(file);
-    }
-
-    else if(strcmp(fileType,"jpg")==0)
+    if(strcmp(fileType,"jpg")==0)
     {
         recieveImage(socket);
     }
+    else
+    {
+        char respondStatus[30];
+        read(socket, respondStatus, 30);
+
+        respondStatus[strlen(respondStatus) - 1] = '\0';
+        printf("%s",respondStatus);
+
+
+        char filesize[1024] = {0};
+        read(socket,filesize,1024);
+        filesize[strlen(filesize)] = '\0';
+
+        int fsize = atoi(filesize);
+        char buffer[fsize];
+
+
+        if(strcmp(fileType,"txt")==0 || strcmp(fileType,"html")==0)
+        {
+            read(socket,buffer,fsize);
+            buffer[fsize] = '\0';
+
+            FILE *file;
+            file = fopen(fileName, "w");
+            fprintf(file,"%s",buffer);
+            memset(buffer,0,strlen(buffer));
+            memset(respondStatus, 0, strlen(respondStatus));
+            fclose(file);
+        }
+    }
+
+
 }
