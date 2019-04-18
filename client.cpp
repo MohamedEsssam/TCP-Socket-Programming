@@ -85,12 +85,20 @@ int main()
         strcat(input2, " ");
         char *temp2 = (char *)malloc(strlen(input2) * sizeof(char));
         strcpy(temp2,input2);
+        char *fileContent =readSentFile();
+
+        printf("%d", strlen(fileContent));
+
+        char *requestContent = (char *)malloc((strlen(fileContent) + 50) * sizeof(char));
+
+        strcpy(requestContent, input2);
+        strcat(requestContent, fileContent);
+        requestContent[strlen(fileContent) + strlen(input2)] = '\0';
+
+        //strcat(input2, readSentFile());
 
 
-        strcat(input2, readSentFile());
-
-
-        if(strcmp(input2,temp2) == 0)
+        if(strcmp(requestContent,temp2) == 0)
         {
             printf("File Not Found\n");
             close(mySocket);
@@ -100,7 +108,7 @@ int main()
 
 
         stringstream temp;
-        temp << (int)strlen(input2);
+        temp << (int)strlen(requestContent);
         string str = temp.str();
         char const *requestSize = str.c_str();
 
@@ -111,8 +119,8 @@ int main()
 
         sleep(2);
 
-        printf("request : %s\n", input2);
-        send(mySocket, input2, strlen(input2), 0 );
+        printf("request : %s\n", requestContent);
+        send(mySocket, requestContent, strlen(requestContent), 0 );
         memset(input2,0,100);
         read(mySocket,input2,100);
         printf("%s",input2);

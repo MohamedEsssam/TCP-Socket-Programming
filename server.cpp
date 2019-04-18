@@ -8,13 +8,14 @@
 #include <pthread.h>
 #include <sstream>
 #define PORT 8080
-#define BUFFER_SIZE 1024
+
 using namespace std;
 char buffer[1024] = {0};
 char *responseStatus;
-int contentsize = 0;
+int contentsize = 0, BUFFER_SIZE;
 char tempName[100] = {0};
 char fileType[100] = {0};
+
 char** split(char* line)
 {
     contentsize = 0;
@@ -75,6 +76,7 @@ char* readFile(char* fileName)
     if (!file)
     {
         printf("file not found\n");
+        remove(fileName);
         return "";
     }
     char *fileContent = (char *) malloc(sizeof(char) * 0);
@@ -94,6 +96,7 @@ char* readFile(char* fileName)
 
 void postFile(char ** requestContent)
 {
+    printf("%s   %d" ,requestContent[1], contentsize);
     FILE *file = fopen(requestContent[1],"w");
 
     for (int i = 2; i< contentsize; i++)
@@ -235,12 +238,13 @@ void *respond(void *new_socket)
 
     if (requestSizeAsInt != 0)
     {
+        printf("%d", requestSizeAsInt);
 
         char buffer[requestSizeAsInt];
         buffer[requestSizeAsInt] = '\0';
+        BUFFER_SIZE = requestSizeAsInt;
 
-
-        read(newSocketFD, buffer, 1024);
+        read(newSocketFD, buffer, requestSizeAsInt);
 
         printf("New Request : %s\n", buffer);
 
