@@ -59,6 +59,7 @@ void dotSplit(char* line)
     }
     tokens[index] = NULL;
     strcpy(fileType,tokens[1]);
+    free(tokens);
 }
 
 
@@ -82,6 +83,7 @@ char* readFile(char* fileName)
         strcpy(lineContent,"\0");
     }
     strcat(fileContent,lineContent);
+    free(lineContent);
     fclose(file);
     return fileContent;
 }
@@ -209,10 +211,9 @@ char *respondToRequest(char *request, int socket)
 
     sleep(1);
     send(socket, fileContent, strlen(fileContent), 0);
-
     close(socket);
-
-
+    free(requestContent);
+    free(responseStatus);
 }
 
 void *respond(void *new_socket)
@@ -242,4 +243,3 @@ void *respond(void *new_socket)
         memset(buffer, 0, sizeof(buffer));
     }
 }
-

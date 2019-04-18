@@ -96,7 +96,6 @@ int main()
 
         if(strcmp(requestContent,temp2) == 0)
         {
-            printf("File Not Found\n");
             close(mySocket);
             return 0;
         }

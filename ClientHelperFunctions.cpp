@@ -179,7 +179,8 @@ char *readSentFile(){
 FILE *file = fopen(fileName,"r");
     if (!file)
     {
-        printf("file not found\n");
+        printf("File not found\n");
+        remove(fileName);
         return "";
     }
     char *fileContent = (char *) malloc(sizeof(char) * 0);
