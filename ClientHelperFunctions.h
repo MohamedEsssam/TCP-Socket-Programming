@@ -17,4 +17,5 @@ int recieveImage(int socket);
 void recieveFile(int socket);
 char* checkRequest(char* line);
 char* readSentFile();
+using namespace std;
 #endif //TCP_SOCKET_PROGRAMMING_CLIENTHELPERFUNCTIONS_H

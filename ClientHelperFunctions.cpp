@@ -89,17 +89,15 @@ char* checkRequest(char* line)
 int recieveImage(int socket)
 { // Start function
 
-    int buffersize = 0, recv_size = 0,size = 0, read_size, write_size, packet_index =1,stat;
-    char sizeChar[1024] = {0};
-    char imagearray[10241],verify = '1';
+    int recv_size = 0,size = 0, read_size, write_size, packet_index =1,stat;
+    char imagearray[10241];
     FILE *image;
 
-//Find the size of the image
-//    do{
-//        stat = read(socket, &size, sizeof(int));
-//    }while(stat<0);
+    //Find the size of the image
+    do{
+        stat = read(socket, &size, sizeof(int));
+    }while(stat<0);
 
-    size = 114270;
     printf("Packet received.\n");
     printf("Packet size: %i\n",stat);
     printf("Image size: %i\n",size);
@@ -115,7 +113,7 @@ int recieveImage(int socket)
     printf("Reply sent\n");
     printf(" \n");
 
-    image = fopen("capture2.jpg", "w");
+    image = fopen(fileName, "w");
 
     if( image == NULL) {
         printf("Error has occurred. Image file could not be opened\n");
@@ -124,14 +122,12 @@ int recieveImage(int socket)
 //Loop while we have not received the entire file yet
 
 
-    int need_exit = 0;
     struct timeval timeout = {10,0};
 
     fd_set fds;
-    int buffer_fd, buffer_out;
+    int buffer_fd;
 
     while(recv_size < size) {
-//while(packet_index < 2){
 
         FD_ZERO(&fds);
         FD_SET(socket,&fds);
@@ -201,7 +197,7 @@ FILE *file = fopen(fileName,"r");
     return fileContent;
 }
 
-int recieveFile(int socket)
+void recieveFile(int socket)
 {
     if(strcmp(fileType,"jpg")==0)
     {

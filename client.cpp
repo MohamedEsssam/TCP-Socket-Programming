@@ -12,13 +12,10 @@ using namespace std;
 
 int main()
 {
-    int mySocket, connStatus, valread;
+    int mySocket, connStatus;
     struct sockaddr_in serv_addr;
     char input[100];
-    char buffer[1024] = {0};
-    FILE *received_file;
-    ssize_t len;
-    int file_size,remain_data;
+
     mySocket = socket(AF_INET,SOCK_STREAM,0);
     if(mySocket<0)
     {
@@ -95,7 +92,6 @@ int main()
         strcat(requestContent, fileContent);
         requestContent[strlen(fileContent) + strlen(input2)] = '\0';
 
-        //strcat(input2, readSentFile());
 
 
         if(strcmp(requestContent,temp2) == 0)

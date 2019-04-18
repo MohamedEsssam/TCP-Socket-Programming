@@ -10,7 +10,6 @@
 #define PORT 8080
 
 using namespace std;
-char buffer[1024] = {0};
 char *responseStatus;
 int contentsize = 0, BUFFER_SIZE;
 char tempName[100] = {0};
@@ -174,9 +173,7 @@ char *respondToRequest(char *request, int socket)
     char ** requestContent = split(request);
     strcpy(tempName,requestContent[1]);
     printf("file name: %s\n", tempName);
-    //char ** checkImageOrtext = dotSplit(request);
     char *fileContent = "" ;
-    bool requestValid = true;
     responseStatus = (char *) malloc(sizeof(char) * (35));
 
     printf("request type : %s\n", requestContent[0]);
